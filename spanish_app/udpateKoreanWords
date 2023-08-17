@@ -1,0 +1,60 @@
+import mysql.connector
+import requests
+import json
+import os
+
+def update_korean_words():
+
+    # MySQL에 연결
+    connection = mysql.connector.connect(
+        host=os.environ.get('MYSQL_DB_HOST'),
+        user=os.environ.get('MYSQL_DB_USER'),
+        password=os.environ.get('MYSQL_DB_PW'),
+        database="spanish_app"
+    )
+
+    cursor = connection.cursor()
+
+    # korean_word 컬럼 업데이트를 위한 headers
+    # headers = {
+    #     "X-Naver-Client-Id": os.environ.get('PAPAGO_CLIENT_ID'),
+    #     "X-Naver-Client-Secret": os.environ.get('PAPAGO_CLIENT_SECRET')
+    # }
+
+    headers = {
+        "X-Naver-Client-Id": 'is5cMV5Oako5F5ny_Iya',
+        "X-Naver-Client-Secret": 'i9b4wPumrV'
+    }
+
+
+    # spanish_word 컬럼을 가져와 번역한 뒤 korean_word 컬럼에 덮어씌움
+    cursor.execute("SELECT word_id, english_word FROM words")
+    english_words = cursor.fetchall()
+    
+    for word_id, english_word in english_words:
+        try:
+            data = {
+                "source": "en",
+                "target": "ko",
+                "text": english_word
+            }
+            response = requests.post("https://openapi.naver.com/v1/papago/n2mt", headers=headers, data=data)
+            response.raise_for_status()
+
+            translated_text = json.loads(response.text)['message']['result']['translatedText']
+
+            # 번역된 단어로 korean_word 컬럼 업데이트
+            cursor.execute("UPDATE words SET korean_word = %s WHERE word_id = %s", (translated_text, word_id))
+
+        except requests.exceptions.RequestException as e:
+            print(f"번역 실패 단어 : {english_word}: {e}")
+
+    # 변경사항 저장
+    connection.commit()
+
+    cursor.close()
+    connection.close()
+    print("korean_word 업데이트가 완료되었습니다.")
+
+# 함수 호출
+update_korean_words()
