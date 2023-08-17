@@ -16,14 +16,9 @@ def update_korean_words():
     cursor = connection.cursor()
 
     # korean_word 컬럼 업데이트를 위한 headers
-    # headers = {
-    #     "X-Naver-Client-Id": os.environ.get('PAPAGO_CLIENT_ID'),
-    #     "X-Naver-Client-Secret": os.environ.get('PAPAGO_CLIENT_SECRET')
-    # }
-
     headers = {
-        "X-Naver-Client-Id": 'is5cMV5Oako5F5ny_Iya',
-        "X-Naver-Client-Secret": 'i9b4wPumrV'
+        "X-Naver-Client-Id": os.environ.get('PAPAGO_CLIENT_ID'),
+        "X-Naver-Client-Secret": os.environ.get('PAPAGO_CLIENT_SECRET')
     }
 
 
